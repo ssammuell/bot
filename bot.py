@@ -9,6 +9,7 @@ from bs4 import BeautifulSoup
 
 BOT_TOKEN = '6880103592:AAGMSqaIM1gOGmvPEC52IiE50cTpS3v64Pc'
 BOT_ID ='269014811'
+timenow = time.localtime()
 
 def bot_send_text(bot_message):
     send_text = 'https://api.telegram.org/bot'+BOT_TOKEN+'/sendMessage?chat_id='+BOT_ID+'&parse_mode=Markdown&text='+bot_message
@@ -22,7 +23,7 @@ def sendClasificacion():
     
     if (response.status_code==200):
         cadena='\n'
-        cadena='(Actualizado'+str(time.strftime('%Y-%m-%d %H:%M', timenow)+')\n')
+        cadena='(Actualizado '+str(time.strftime('%Y-%m-%d %H:%M', timenow)+')\n')
         soup = BeautifulSoup(response.text, 'html.parser')
         
         rows = soup.findAll('tr', attrs={'class': re.compile('fila.*')})    
@@ -37,9 +38,10 @@ def sendClasificacion():
 
 
 #test_bot = bot_send_text('¡Hola, Telegram!')
-print ('# Start my bot application!!')
+#sendClasificacion()
+
 while True:
-    timenow = time.localtime()
+    
    # print("I'm working...", str( time.strftime("%H:%M", timenow) )) 
 #                     |----------------- on minute 0, so every full hour
 #                     |  |--------------- on hours 9 till 16
