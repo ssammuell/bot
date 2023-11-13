@@ -37,7 +37,7 @@ def sendClasificacion():
 
 
 #test_bot = bot_send_text('¡Hola, Telegram!')
-
+print ('# Start my bot application!!')
 while True:
     timenow = time.localtime()
    # print("I'm working...", str( time.strftime("%H:%M", timenow) )) 
