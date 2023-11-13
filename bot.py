@@ -21,10 +21,12 @@ def sendClasificacion():
     response = requests.get('http://deportesclm.educa.jccm.es/index.php?prov=19&tipo=&fase=11&dep=FT&cat=16&gru=1309&ver=C')
     
     if (response.status_code==200):
+        cadena='\n'
+        cadena='(Actualizado'+str(time.strftime('%Y-%m-%d %H:%M', timenow)+')\n')
         soup = BeautifulSoup(response.text, 'html.parser')
         
         rows = soup.findAll('tr', attrs={'class': re.compile('fila.*')})    
-        cadena='\n'
+        
         for row in rows:
             posicion = row.find('td', attrs={'class': 'posicion'}).text
             equipo = row.find('td', attrs={'class': 'equipo'}).text
@@ -38,7 +40,7 @@ def sendClasificacion():
 
 while True:
     timenow = time.localtime()
-    print("I'm working...", str( time.strftime("%H:%M", timenow) )) 
+   # print("I'm working...", str( time.strftime("%H:%M", timenow) )) 
 #                     |----------------- on minute 0, so every full hour
 #                     |  |--------------- on hours 9 till 16
 #                     |  |   | |-------- every day in month and every month
