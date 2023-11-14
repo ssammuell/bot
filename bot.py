@@ -78,7 +78,8 @@ while False:
 #                     |  |--------------- on hours 9 till 16
 #                     |  |  | |-------- every day in month and every month
 #                     V  V  V V  v------ on weekdays Monday till Friday
-    if pycron.is_now('1 1 11-13 * * mon-fri'):        
+    if pycron.is_now('1 1 11-13 * * mon-fri'):  
+        time.sleep(120)
         sendClasificacion()
         time.sleep(60)
 #time.sleep(60)
