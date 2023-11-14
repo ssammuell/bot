@@ -5,6 +5,8 @@ import schedule
 import time
 import pycron
 from bs4 import BeautifulSoup
+from datetime import datetime
+import csv
 
 
 BOT_TOKEN = '6880103592:AAGMSqaIM1gOGmvPEC52IiE50cTpS3v64Pc'
@@ -38,18 +40,40 @@ def sendClasificacion():
         
         bot_send_text(cadena)
 
+def getFechaJornada(texto):        
+    print(datetime.strptime(texto.split('-')[1],' %d/%m/%y') > datetime.now())
+    
 
-#test_bot = bot_send_text('¡Hola, Telegram!')
+def getJornadas():
+    response = requests.get('http://deportesclm.educa.jccm.es/index.php?prov=19&tipo=&fase=11&dep=FT&cat=16&gru=1309&ver=R')
+    if (response.status_code==200):
+            cadena='\n'            
+            soup = BeautifulSoup(response.text, 'html.parser')
+            jornadas = soup.find(attrs={'id':'jor'})
+            
+            for item in jornadas.find_all('option'):
+                if '-' in item.text:
+                     print(item.text)
+                
+
+
+
 print('Telegram Bot Start!')
+getJornadas()
+sendClasificacion()
 
-while True:
+with open('acciones.csv', 'a', newline='') as file:
+    writer = csv.writer(file)                       
+    writer.writerow('demodemodemo')
+
+while False:
     
    # print("I'm working...", str( time.strftime("%H:%M", timenow) )) 
 #                     |----------------- on minute 0, so every full hour
 #                     |  |--------------- on hours 9 till 16
 #                     |  |  | |-------- every day in month and every month
 #                     V  V  V V  v------ on weekdays Monday till Friday
-    if pycron.is_now('1 11-15 * * mon-fri'):        
+    if pycron.is_now('1 11-13 * * mon-fri'):        
         sendClasificacion()
         time.sleep(60)
-#
+#time.sleep(60)
