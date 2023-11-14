@@ -11,12 +11,14 @@ from datetime import datetime
 
 BOT_TOKEN = '6880103592:AAGMSqaIM1gOGmvPEC52IiE50cTpS3v64Pc'
 BOT_ID ='269014811'
+CHANEL_ID='femenino_dinamo_guadalajara'
+CHANEL_ID_TEST='testbotfutbol'
 timenow = time.localtime()
 
 def bot_send_text(bot_message):
         
     #send_text = 'https://api.telegram.org/bot'+BOT_TOKEN+'/sendMessage?chat_id='+BOT_ID+'&parse_mode=Markdown&text='+bot_message
-    send_text = 'https://api.telegram.org/bot'+BOT_TOKEN+'/sendMessage?chat_id=@femenino_dinamo_guadalajara&parse_mode=markdown&text='+bot_message
+    send_text = 'https://api.telegram.org/bot'+BOT_TOKEN+'/sendMessage?chat_id=@'+CHANEL_ID+'&parse_mode=HTML&text='+bot_message
 
     response = requests.get(send_text)
     print(response)
@@ -30,12 +32,23 @@ def sendClasificacion():
         soup = BeautifulSoup(response.text, 'html.parser')
         
         rows = soup.findAll('tr', attrs={'class': re.compile('fila.*')})    
-        
+        i=0
         for row in rows:
             posicion = row.find('td', attrs={'class': 'posicion'}).text
             equipo = row.find('td', attrs={'class': 'equipo'}).text
             puntos = row.find('td', attrs={'class': 'puntos'}).text
-            cadena+=('*'+str(posicion)+' .- '+str(equipo)+'*\nPuntos: '+str(puntos) +'\n')
+            cadena+='<strong>'
+            if i == 0 :
+                cadena+='🥇'+str(posicion)+' .- '+str(equipo)+'</strong>\nPuntos: '+str(puntos) +'\n'
+            else:
+                if i==1:
+                    cadena+='🥈'+str(posicion)+' .- '+str(equipo)+'</strong>\nPuntos: '+str(puntos) +'\n'
+                else:
+                    if i==2:
+                        cadena+='🥉'+str(posicion)+' .- '+str(equipo)+'</strong>\nPuntos: '+str(puntos) +'\n'
+                    else:
+                        cadena+=str(posicion)+' .- '+str(equipo)+'</strong>\nPuntos: '+str(puntos) +'\n'
+            i=i+1
         
         bot_send_text(cadena)
 
@@ -78,7 +91,7 @@ def getJornadas():
                 if '-' in item.text:
                      
                      if isJornadaPasada(item.text) :                         
-                        cadena+=('\n\n_'+item.text+ '_ \n')
+                        cadena+=('\n\n<i>'+item.text+ '</i> \n')
                         cadena+=(getNumJornada(item.text))
                         cadena+='\n'
                        
@@ -98,15 +111,4 @@ getJornadas()
 
 #publica la clasificacion
 sendClasificacion()
-
-while False:
-    
-   # print("I'm working...", str( time.strftime("%H:%M", timenow) )) 
-#                     |----------------- on minute 0, so every full hour
-#                     |  |--------------- on hours 9 till 16
-#                     |  |  | |-------- every day in month and every month
-#                     V  V  V V  v------ on weekdays Monday till Friday
-    if pycron.is_now('1 1 11-13 * * mon-fri'):        
-        sendClasificacion()
-        time.sleep(60)
 time.sleep(60)
