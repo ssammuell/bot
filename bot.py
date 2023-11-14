@@ -66,6 +66,11 @@ with open('acciones.csv', 'a', newline='') as file:
     writer = csv.writer(file)                       
     writer.writerow('demodemodemo')
 
+with open("./acciones.csv", 'r') as file:
+  csvreader = csv.reader(file)
+  for row in csvreader:
+    print(row)    
+
 while False:
     
    # print("I'm working...", str( time.strftime("%H:%M", timenow) )) 
