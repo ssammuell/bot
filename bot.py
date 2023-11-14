@@ -35,7 +35,7 @@ def sendClasificacion():
             posicion = row.find('td', attrs={'class': 'posicion'}).text
             equipo = row.find('td', attrs={'class': 'equipo'}).text
             puntos = row.find('td', attrs={'class': 'puntos'}).text
-            cadena+=(str(posicion)+' .- '+str(equipo)+'\nPuntos: '+str(puntos) +'\n\n')
+            cadena+=('*'+str(posicion)+' .- '+str(equipo)+'*\nPuntos: '+str(puntos) +'\n')
         
         bot_send_text(cadena)
 
@@ -44,9 +44,9 @@ def isJornadaPasada(texto):
 
 def getNombre(equipo):
     if (equipo.find_all('acronym')):
-        return ((equipo.find_all('acronym')[0].get('title')).strip())[0:15]
+        return ((equipo.find_all('acronym')[0].get('title')).strip())[0:15].lower()
     else :
-        return (equipo.text.strip())[0:15]
+        return (equipo.text.strip())[0:15].lower()
 
 def getInfoJornada(numJornada):
     cadena=''
@@ -66,7 +66,7 @@ def getNumJornada(texto):
 
 def getJornadas():
     response = requests.get('http://deportesclm.educa.jccm.es/index.php?prov=19&tipo=&fase=11&dep=FT&cat=16&gru=1309&ver=R')
-    cadena='\n'
+    cadena='\n' 
     cadenaResultados='\n'
     if (response.status_code==200):
             cadena='\n'  
@@ -78,8 +78,9 @@ def getJornadas():
                 if '-' in item.text:
                      
                      if isJornadaPasada(item.text) :                         
-                        cadena+=('\n\n_'+item.text+ ' (finalizada) _ \n')
+                        cadena+=('\n\n_'+item.text+ '_ \n')
                         cadena+=(getNumJornada(item.text))
+                        cadena+='\n'
                        
                      else:
                         cadena+=(item.text+'\n')
