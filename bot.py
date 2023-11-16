@@ -13,21 +13,23 @@ BOT_TOKEN = '6880103592:AAGMSqaIM1gOGmvPEC52IiE50cTpS3v64Pc'
 BOT_ID ='269014811'
 CHANEL_ID='femenino_dinamo_guadalajara'
 CHANEL_ID_TEST='testbotfutbol'
+EQUIPOS=[['Alevín Femenino',10,1296],['Infantil Femenino',16,1309]]
+TIEMPO_JORNADA=5
 timenow = time.localtime()
 
 def bot_send_text(bot_message):
         
-    print(bot_message)
+    #print(bot_message)
     #send_text = 'https://api.telegram.org/bot'+BOT_TOKEN+'/sendMessage?chat_id='+BOT_ID+'&parse_mode=Markdown&text='+bot_message
     send_text = 'https://api.telegram.org/bot'+BOT_TOKEN+'/sendMessage?chat_id=@'+CHANEL_ID_TEST+'&parse_mode=HTML&text='+bot_message
 
-    #response = requests.get(send_text)
-    #print(response)
-    #return response    
-    return ''
+    response = requests.get(send_text)
+    print(response)
+    return response    
+    
 
-def sendClasificacion():
-    response = requests.get('http://deportesclm.educa.jccm.es/index.php?prov=19&tipo=&fase=11&dep=FT&cat=16&gru=1309&ver=C')
+def sendClasificacion(categoria, grupo):
+    response = requests.get('http://deportesclm.educa.jccm.es/index.php?prov=19&tipo=&fase=11&dep=FT&cat='+categoria+'&gru='+grupo+'&ver=C')
     
     if (response.status_code==200):
         cadena='\n'       
@@ -85,8 +87,8 @@ def getInfoJornada(numJornada):
 def getNumJornada(texto):    
     return getInfoJornada(texto.split(' ')[1])
 
-def getJornadas():
-    response = requests.get('http://deportesclm.educa.jccm.es/index.php?prov=19&tipo=&fase=11&dep=FT&cat=16&gru=1309&ver=R')
+def getJornadas(categoria, grupo):
+    response = requests.get('http://deportesclm.educa.jccm.es/index.php?prov=19&tipo=&fase=11&dep=FT&cat='+categoria+'&gru='+grupo+'&ver=R')
     cadena='\n' 
     cadenaResultados='\n'
     if (response.status_code==200):
@@ -110,18 +112,21 @@ def getJornadas():
                              diasJornada=diasHastaProximaJornada(item.text)                             
                          cadena+=(item.text+'\n')
 
-            if (diasJornada>5):
+            if (diasJornada>TIEMPO_JORNADA):
                 bot_send_text('Semana de descanso. A disfrutar del Fin de Semana!!')                
             else:                
                 bot_send_text(cadena)
                 #publica la clasificacion
-                sendClasificacion()
+                sendClasificacion(categoria,grupo)
             
                 
 
 
 
 print('Telegram Bot Start!') 
-
 #publica la proxima jornada
-getJornadas()
+for item in EQUIPOS:
+    bot_send_text('<strong> 💪 💪 💪 '+item[0]+' 💪 💪 💪 </strong>')
+    getJornadas(str(item[1]),str(item[2]))
+    
+
