@@ -17,12 +17,14 @@ timenow = time.localtime()
 
 def bot_send_text(bot_message):
         
+    print(bot_message)
     #send_text = 'https://api.telegram.org/bot'+BOT_TOKEN+'/sendMessage?chat_id='+BOT_ID+'&parse_mode=Markdown&text='+bot_message
-    send_text = 'https://api.telegram.org/bot'+BOT_TOKEN+'/sendMessage?chat_id=@'+CHANEL_ID+'&parse_mode=HTML&text='+bot_message
+    send_text = 'https://api.telegram.org/bot'+BOT_TOKEN+'/sendMessage?chat_id=@'+CHANEL_ID_TEST+'&parse_mode=HTML&text='+bot_message
 
-    response = requests.get(send_text)
-    print(response)
-    return response
+    #response = requests.get(send_text)
+    #print(response)
+    #return response    
+    return ''
 
 def sendClasificacion():
     response = requests.get('http://deportesclm.educa.jccm.es/index.php?prov=19&tipo=&fase=11&dep=FT&cat=16&gru=1309&ver=C')
@@ -55,6 +57,12 @@ def sendClasificacion():
 def isJornadaPasada(texto):        
     return (datetime.strptime(texto.split('-')[1],' %d/%m/%y') < datetime.now())
 
+def diasHastaProximaJornada(texto):
+    dateFinal=datetime.strptime(texto.split('-')[1],' %d/%m/%y')
+    dateInicial= datetime.now()
+    duration_in_s=(dateFinal-dateInicial).total_seconds() 
+    return divmod(duration_in_s, 86400)[0] 
+
 def getNombre(equipo):
     if (equipo.find_all('acronym')):
         return ((equipo.find_all('acronym')[0].get('title')).strip())[0:15].lower()
@@ -86,19 +94,28 @@ def getJornadas():
             cadenaJornadas='\n'          
             soup = BeautifulSoup(response.text, 'html.parser')
             jornadas = soup.find(attrs={'id':'jor'})
-            
+            checkJornada=False
+            diasJornada=0
             for item in jornadas.find_all('option'):                
                 if '-' in item.text:
-                     
+                     diasHastaProximaJornada(item.text)
                      if isJornadaPasada(item.text) :                         
                         cadena+=('\n\n<i>'+item.text+ '</i> \n')
                         cadena+=(getNumJornada(item.text))
                         cadena+='\n'
                        
                      else:
-                        cadena+=(item.text+'\n')
-            
-            bot_send_text(cadena)
+                         if not checkJornada:
+                             checkJornada=True
+                             diasJornada=diasHastaProximaJornada(item.text)                             
+                         cadena+=(item.text+'\n')
+
+            if (diasJornada>5):
+                bot_send_text('Semana de descanso. A disfrutar del Fin de Semana!!')                
+            else:                
+                bot_send_text(cadena)
+                #publica la clasificacion
+                sendClasificacion()
             
                 
 
@@ -108,7 +125,3 @@ print('Telegram Bot Start!')
 
 #publica la proxima jornada
 getJornadas()
-
-#publica la clasificacion
-sendClasificacion()
-time.sleep(60)
