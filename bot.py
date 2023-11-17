@@ -13,7 +13,7 @@ BOT_TOKEN = '6880103592:AAGMSqaIM1gOGmvPEC52IiE50cTpS3v64Pc'
 BOT_ID ='269014811'
 CHANEL_ID='femenino_dinamo_guadalajara'
 CHANEL_ID_TEST='testbotfutbol'
-EQUIPOS=[['Alevín Femenino',10,1296],['Infantil Femenino',16,1309]]
+EQUIPOS=[['Alevín Femenino','Álvaro-?',10,1296],['Alevín-Infantil Femenino','Óscar-Julia',16,1309]]
 TIEMPO_JORNADA=5
 timenow = time.localtime()
 
@@ -21,7 +21,8 @@ def bot_send_text(bot_message):
         
     #print(bot_message)
     #send_text = 'https://api.telegram.org/bot'+BOT_TOKEN+'/sendMessage?chat_id='+BOT_ID+'&parse_mode=Markdown&text='+bot_message
-    send_text = 'https://api.telegram.org/bot'+BOT_TOKEN+'/sendMessage?chat_id=@'+CHANEL_ID_TEST+'&parse_mode=HTML&text='+bot_message
+    #send_text = 'https://api.telegram.org/bot'+BOT_TOKEN+'/sendMessage?chat_id=@'+CHANEL_ID_TEST+'&parse_mode=HTML&text='+bot_message
+    send_text = 'https://api.telegram.org/bot'+BOT_TOKEN+'/sendMessage?chat_id=@'+CHANEL_ID+'&parse_mode=HTML&text='+bot_message
 
     response = requests.get(send_text)
     print(response)
@@ -32,7 +33,7 @@ def sendClasificacion(categoria, grupo):
     response = requests.get('http://deportesclm.educa.jccm.es/index.php?prov=19&tipo=&fase=11&dep=FT&cat='+categoria+'&gru='+grupo+'&ver=C')
     
     if (response.status_code==200):
-        cadena='\n'       
+        cadena='\n 🏃🏼‍♀️⚽🏃🏼‍♀️ <strong>CLASIFICACIÓN</strong> 🏃🏼‍♀️⚽🏃🏼‍♀️\n\n'       
         soup = BeautifulSoup(response.text, 'html.parser')
         
         rows = soup.findAll('tr', attrs={'class': re.compile('fila.*')})    
@@ -71,46 +72,53 @@ def getNombre(equipo):
     else :
         return (equipo.text.strip())[0:15].lower()
 
-def getInfoJornada(numJornada):
+def getInfoJornada(numJornada,categoria,grupo):
     cadena=''
-    myResponse = requests.get('http://deportesclm.educa.jccm.es/index.php?prov=19&tipo=&fase=11&dep=FT&cat=16&gru=1309&ver=R&jor='+numJornada)
+    url=('http://deportesclm.educa.jccm.es/index.php?prov=19&tipo=&fase=11&dep=FT&cat='+categoria+'&gru='+grupo+'&ver=R&jor='+numJornada)
+    myResponse = requests.get(url)
     if (myResponse.status_code == 200):
         soup = BeautifulSoup(myResponse.text, 'html.parser')
         tabla=(soup.find('tbody')).find_all('tr')
         for item in tabla:
             cadena+=getNombre(item.find(attrs={'class':'EquipoL'}))+'  VS  '+getNombre(item.find(attrs={'class':'EquipoV'}))
             if len(item.find_all(attrs={'class':'puntos'}))>0 :
-                cadena+=(' ('+ str(item.find_all(attrs={'class':'puntos'})[0].text)+' - '+str(item.find_all(attrs={'class':'puntos'})[1].text)+')\n')
+                cadena+=(' ('+ str(item.find_all(attrs={'class':'puntos'})[0].text)+' - '+str(item.find_all(attrs={'class':'puntos'})[1].text)+')')
+            cadena+='\n'
     return cadena         
     
 
-def getNumJornada(texto):    
-    return getInfoJornada(texto.split(' ')[1])
+def getNumJornada(texto,categoria,grupo):    
+    return getInfoJornada(texto.split(' ')[1],categoria,grupo)
 
 def getJornadas(categoria, grupo):
-    response = requests.get('http://deportesclm.educa.jccm.es/index.php?prov=19&tipo=&fase=11&dep=FT&cat='+categoria+'&gru='+grupo+'&ver=R')
-    cadena='\n' 
-    cadenaResultados='\n'
-    if (response.status_code==200):
-            cadena='\n'  
-            cadenaJornadas='\n'          
+    url=('http://deportesclm.educa.jccm.es/index.php?prov=19&tipo=&fase=11&dep=FT&cat='+categoria+'&gru='+grupo+'&ver=R')    
+    response = requests.get(url)
+        
+    if (response.status_code==200):            
+            cadena='\n <strong>🗓️ CALENDARIO 🗓️</strong> \n'             
             soup = BeautifulSoup(response.text, 'html.parser')
             jornadas = soup.find(attrs={'id':'jor'})
             checkJornada=False
-            diasJornada=0
+            diasJornada=0            
+            jornadaPasada=False
             for item in jornadas.find_all('option'):                
                 if '-' in item.text:
                      diasHastaProximaJornada(item.text)
                      if isJornadaPasada(item.text) :                         
-                        cadena+=('\n\n<i>'+item.text+ '</i> \n')
-                        cadena+=(getNumJornada(item.text))
-                        cadena+='\n'
-                       
+                        cadena+=('<i>'+item.text+ '</i> \n')
+                        cadena+=(getNumJornada(item.text,categoria,grupo))                                               
+                        jornadaPasada=True
                      else:
                          if not checkJornada:
                              checkJornada=True
                              diasJornada=diasHastaProximaJornada(item.text)                             
-                         cadena+=(item.text+'\n')
+                         cadena+=(item.text)
+                         if jornadaPasada:
+                            jornadaPasada=False
+                            cadena+='\n'
+                            cadena+=(getNumJornada(item.text,categoria,grupo)) 
+                            
+                cadena+='\n'
 
             if (diasJornada>TIEMPO_JORNADA):
                 bot_send_text('Semana de descanso. A disfrutar del Fin de Semana!!')                
@@ -125,8 +133,7 @@ def getJornadas(categoria, grupo):
 
 print('Telegram Bot Start!') 
 #publica la proxima jornada
-for item in EQUIPOS:
-    bot_send_text('<strong> ⚽ ⚽ 💪 '+item[0]+' 💪 ⚽ ⚽ </strong>')
-    getJornadas(str(item[1]),str(item[2]))
+for item in EQUIPOS:    
+    bot_send_text('<strong> 💚🖤 ⚽'+item[0]+' ⚽🖤💚</strong> \n'+item[1])
+    getJornadas(str(item[2]),str(item[3]))
     
-
