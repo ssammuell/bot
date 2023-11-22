@@ -81,8 +81,19 @@ def getInfoJornada(numJornada,categoria,grupo):
         tabla=(soup.find('tbody')).find_all('tr')
         for item in tabla:
             cadena+=getNombre(item.find(attrs={'class':'EquipoL'}))+'  VS  '+getNombre(item.find(attrs={'class':'EquipoV'}))
+            ## Obtengo los resulados
             if len(item.find_all(attrs={'class':'puntos'}))>0 :
                 cadena+=(' ('+ str(item.find_all(attrs={'class':'puntos'})[0].text)+' - '+str(item.find_all(attrs={'class':'puntos'})[1].text)+')')
+            ## Obtengo la hora
+            if len(item.find_all(attrs={'class':'hora'}))>0 :
+                cadena+=(' ⌚ '+ str(item.find_all(attrs={'class':'hora'})[0].text)+'')
+                ##Obtengo la ubicacion
+                if len(item.find_all(attrs={'class':'imgBandera'}))>0 :
+                    tagBandera=item.find_all(attrs={'class':'imgBandera'})[0]
+                    childrens= tagBandera.findChildren("img",recursive=False)
+                    if (len(childrens)>0):
+                        cadena+='\n 📌'+(((str(childrens[0].get('title'))).split('-'))[0])
+                        cadena+='\n'
             cadena+='\n'
     return cadena         
     
@@ -102,8 +113,7 @@ def getJornadas(categoria, grupo):
             diasJornada=0            
             jornadaPasada=False
             for item in jornadas.find_all('option'):                
-                if '-' in item.text:
-                     diasHastaProximaJornada(item.text)
+                if '-' in item.text:                     
                      if isJornadaPasada(item.text) :                         
                         cadena+=('<i>'+item.text+ '</i> \n')
                         cadena+=(getNumJornada(item.text,categoria,grupo))                                               
