@@ -68,12 +68,12 @@ def diasHastaProximaJornada(texto):
 
 def getNombre(equipo):
     if (equipo.find_all('acronym')):
-        return ((equipo.find_all('acronym')[0].get('title')).strip())[0:15].lower()
+        return ('<strong>'+(equipo.find_all('acronym')[0].get('title')).strip())[0:15]+'</strong>'
     else :
-        return (equipo.text.strip())[0:15].lower()
+        return '<strong>'+(equipo.text.strip())[0:15]+'</strong>'
 
 def getInfoJornada(numJornada,categoria,grupo):
-    cadena=''
+    cadena=''    
     url=('http://deportesclm.educa.jccm.es/index.php?prov=19&tipo=&fase=11&dep=FT&cat='+categoria+'&gru='+grupo+'&ver=R&jor='+numJornada)
     myResponse = requests.get(url)
     if (myResponse.status_code == 200):
@@ -86,7 +86,7 @@ def getInfoJornada(numJornada,categoria,grupo):
                 cadena+=(' ('+ str(item.find_all(attrs={'class':'puntos'})[0].text)+' - '+str(item.find_all(attrs={'class':'puntos'})[1].text)+')')
             ## Obtengo la hora
             if len(item.find_all(attrs={'class':'hora'}))>0 :
-                cadena+=(' ⌚ '+ str(item.find_all(attrs={'class':'hora'})[0].text)+'')
+                cadena+=('\n ⌚ '+ str(item.find_all(attrs={'class':'hora'})[0].text)+'')
                 ##Obtengo la ubicacion
                 if len(item.find_all(attrs={'class':'imgBandera'}))>0 :
                     tagBandera=item.find_all(attrs={'class':'imgBandera'})[0]
@@ -94,6 +94,9 @@ def getInfoJornada(numJornada,categoria,grupo):
                     if (len(childrens)>0):
                         cadena+='\n 📌'+(((str(childrens[0].get('title'))).split('-'))[0])
                         cadena+='\n'
+                else:
+                    cadena+='\n ❓ <i>Pendiente</i>'
+                    cadena+='\n'
             cadena+='\n'
     return cadena         
     
@@ -106,27 +109,35 @@ def getJornadas(categoria, grupo):
     response = requests.get(url)
         
     if (response.status_code==200):            
-            cadena='\n <strong>🗓️ CALENDARIO 🗓️</strong> \n'             
+            #cadena='<strong>🗓️ HORARIOS JORNADA 🗓️</strong>'  
+            cadena=''           
             soup = BeautifulSoup(response.text, 'html.parser')
             jornadas = soup.find(attrs={'id':'jor'})
             checkJornada=False
             diasJornada=0            
             jornadaPasada=False
-            for item in jornadas.find_all('option'):                
+            for item in jornadas.find_all('option'):   
+                             
                 if '-' in item.text:                     
                      if isJornadaPasada(item.text) :                         
-                        cadena+=('<i>'+item.text+ '</i> \n')
-                        cadena+=(getNumJornada(item.text,categoria,grupo))                                               
+                        ## cadena+=('<i>'+item.text+ '</i> \n')
+                        ## cadena+=(getNumJornada(item.text,categoria,grupo))                                               
                         jornadaPasada=True
                      else:
-                         if not checkJornada:
+                         if not checkJornada: #primera jornada
                              checkJornada=True
                              diasJornada=diasHastaProximaJornada(item.text)                             
-                         cadena+=(item.text)
+                         
+                         #Sólo pinto la jornada actual
+                         if (diasHastaProximaJornada(item.text)<5):
+                             cadena='<strong>🗓️ '+(item.text)+' 🗓️</strong>'  
+                                #cadena+=(item.text)
+                         
                          if jornadaPasada:
                             jornadaPasada=False
-                            cadena+='\n'
-                            cadena+=(getNumJornada(item.text,categoria,grupo)) 
+                            if ((diasHastaProximaJornada(item.text)<5)): #Sólo pinto la jornada actual
+                                cadena+='\n'
+                                cadena+=(getNumJornada(item.text,categoria,grupo)) 
                             
                 cadena+='\n'
 
@@ -140,10 +151,12 @@ def getJornadas(categoria, grupo):
                 
 
 
+weekDay=datetime.now().weekday()
+print('Telegram Bot Start! Day:'+str(weekDay)) 
 
-print('Telegram Bot Start!') 
 #publica la proxima jornada
 for item in EQUIPOS:    
-    bot_send_text('<strong> 👇💚🖤 ⚽'+item[0]+' ⚽🖤💚👇</strong> \n'+item[1])
-    getJornadas(str(item[2]),str(item[3]))
+    if (weekDay==2):
+        bot_send_text('<strong> 👇💚🖤 ⚽'+item[0]+' ⚽🖤💚👇</strong> \n'+item[1])            
+        getJornadas(str(item[2]),str(item[3]))
     
