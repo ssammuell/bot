@@ -144,6 +144,6 @@ def getJornadas(categoria, grupo):
 print('Telegram Bot Start!') 
 #publica la proxima jornada
 for item in EQUIPOS:    
-    bot_send_text('<strong> 💚🖤 ⚽'+item[0]+' ⚽🖤💚</strong> \n'+item[1])
+    bot_send_text('<strong> 👇💚🖤 ⚽'+item[0]+' ⚽🖤💚👇</strong> \n'+item[1])
     getJornadas(str(item[2]),str(item[3]))
     
