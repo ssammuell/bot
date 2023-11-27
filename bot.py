@@ -11,7 +11,7 @@ from datetime import datetime
 
 BOT_TOKEN = '6880103592:AAGMSqaIM1gOGmvPEC52IiE50cTpS3v64Pc'
 BOT_ID ='269014811'
-CHANEL_ID='femenino_dinamo_guadalajara'
+CHANEL_ID='base_femenino_dinamo_guadalajara'
 CHANEL_ID_TEST='testbotfutbol'
 EQUIPOS=[['Alevín Femenino','Álvaro-?',10,1296],['Alevín-Infantil Femenino','Óscar-Julia',16,1309]]
 TIEMPO_JORNADA=5
