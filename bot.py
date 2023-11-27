@@ -209,7 +209,7 @@ for item in EQUIPOS:
   
     if True:
         ## Lunes Resultados/Jornada + Clasificación    
-        if weekDay == 0 and hourDay < 15:
+        if weekDay == 0 and hourDay < 15 and hourDay > 12:
             cadenaBot='<strong> 👇💚🖤 ⚽'+item[0]+' ⚽🖤💚👇</strong>\n'+item[1]+'\n'
             jornadaDisputada=getUltimaJornadaDisputada(str(item[2]),str(item[3]))
             cadenaBot+=('\n\n<strong>⚽ RESULTADOS Jornada '+jornadaDisputada+' ⚽</strong>\n\n') 
