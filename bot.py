@@ -11,7 +11,7 @@ from datetime import datetime
 
 BOT_TOKEN = '6880103592:AAGMSqaIM1gOGmvPEC52IiE50cTpS3v64Pc'
 BOT_ID ='269014811'
-CHANEL_ID='base_femenino_dinamo_guadalajara'
+CHANEL_ID='femenino_dinamo_guadalajara'
 CHANEL_ID_TEST='testbotfutbol'
 EQUIPOS=[['Alevín Femenino','Álvaro-?',10,1296],['Alevín-Infantil Femenino','Óscar-Julia',16,1309]]
 TIEMPO_JORNADA=5
@@ -21,8 +21,8 @@ def bot_send_text(bot_message):
         
     #print(bot_message)
     #send_text = 'https://api.telegram.org/bot'+BOT_TOKEN+'/sendMessage?chat_id='+BOT_ID+'&parse_mode=Markdown&text='+bot_message
-    #send_text = 'https://api.telegram.org/bot'+BOT_TOKEN+'/sendMessage?chat_id=@'+CHANEL_ID_TEST+'&parse_mode=HTML&text='+bot_message
-    send_text = 'https://api.telegram.org/bot'+BOT_TOKEN+'/sendMessage?chat_id=@'+CHANEL_ID+'&parse_mode=HTML&text='+bot_message
+    send_text = 'https://api.telegram.org/bot'+BOT_TOKEN+'/sendMessage?chat_id=@'+CHANEL_ID_TEST+'&parse_mode=HTML&text='+bot_message
+    #send_text = 'https://api.telegram.org/bot'+BOT_TOKEN+'/sendMessage?chat_id=@'+CHANEL_ID+'&parse_mode=HTML&text='+bot_message
 
     response = requests.get(send_text)
     print(response)
@@ -55,8 +55,9 @@ def sendClasificacion(categoria, grupo):
                         cadena+=str(posicion)+' .- '+str(equipo)+'</strong>\nPuntos: '+str(puntos) +'\n'
             i=i+1
         
-        bot_send_text(cadena)
-
+        return(cadena)
+    else:
+        return ''
 def isJornadaPasada(texto):        
     return (datetime.strptime(texto.split('-')[1],' %d/%m/%y') < datetime.now())
 
@@ -68,7 +69,7 @@ def diasHastaProximaJornada(texto):
 
 def getNombre(equipo):
     if (equipo.find_all('acronym')):
-        return ('<strong>'+(equipo.find_all('acronym')[0].get('title')).strip())[0:15]+'</strong>'
+        return ('<strong>'+(equipo.find_all('acronym')[0].get('title')).strip())+'</strong>'
     else :
         return '<strong>'+(equipo.text.strip())[0:15]+'</strong>'
 
@@ -97,6 +98,21 @@ def getInfoJornada(numJornada,categoria,grupo):
                 else:
                     cadena+='\n ❓ <i>Pendiente</i>'
                     cadena+='\n'
+            cadena+='\n'
+    return cadena
+
+def getResultadosJornada(numJornada,categoria,grupo):
+    cadena=''    
+    url=('http://deportesclm.educa.jccm.es/index.php?prov=19&tipo=&fase=11&dep=FT&cat='+categoria+'&gru='+grupo+'&ver=R&jor='+numJornada)
+    myResponse = requests.get(url)
+    if (myResponse.status_code == 200):
+        soup = BeautifulSoup(myResponse.text, 'html.parser')
+        tabla=(soup.find('tbody')).find_all('tr')
+        for item in tabla:
+            cadena+=(item.find(attrs={'class':'EquipoL'})).text.replace('[...]','').strip()[0:15]+'  VS  '+(item.find(attrs={'class':'EquipoV'})).text.replace('[...]','').strip()[0:15]
+            ## Obtengo los resulados
+            if len(item.find_all(attrs={'class':'puntos'}))>0 :
+                cadena+=('\n'+ str(item.find_all(attrs={'class':'puntos'})[0].text)+' - '+str(item.find_all(attrs={'class':'puntos'})[1].text))            
             cadena+='\n'
     return cadena         
     
@@ -146,17 +162,63 @@ def getJornadas(categoria, grupo):
             else:                
                 bot_send_text(cadena)
                 #publica la clasificacion
-                sendClasificacion(categoria,grupo)
+                #sendClasificacion(categoria,grupo)
             
-                
+def sendResultados(categoria,grupo):
+    getJornadas(categoria,grupo)
+    
+# Listado de las Jornadas del Calendario
+def getArrayJorandas(categoria,grupo):
+    url=('http://deportesclm.educa.jccm.es/index.php?prov=19&tipo=&fase=11&dep=FT&cat='+categoria+'&gru='+grupo+'&ver=R')    
+    response = requests.get(url)
+    res=[]    
+    if (response.status_code==200):   
+        soup = BeautifulSoup(response.text, 'html.parser')
+        lJornadas = soup.find(attrs={'id':'jor'})         
+        for item in lJornadas:
+            if '-' in item.text: 
+                numero = (item.text.split('-')[0].strip()).split(' ')[1]
+                fechaText = item.text.split('-')[1].strip()
+                fecha=datetime.strptime(fechaText,'%d/%m/%y')                 
+                res.append([numero,fecha])                
+    
+    return res    
 
+#Última jorndada disputada, si no hubira habido jornada no se devuelve nada
+def getUltimaJornadaDisputada(categoria,grupo):
+    lJornadas=getArrayJorandas(categoria,grupo)    
+    res='0'
+    for item in lJornadas:        
+        duration_in_s=(datetime.now()-item[1]).total_seconds() 
+        tiempo=(divmod(duration_in_s, 86400)[0] )
+        if tiempo >0 and tiempo < 5:
+            res=item[0]
+    
+    return res;
+    
+        
+        
 
 weekDay=datetime.now().weekday()
-print('Telegram Bot Start! Day:'+str(weekDay)) 
+hourDay=datetime.now().hour
+print('Telegram Bot Start! Day:'+str(weekDay)+' - Hour :'+str(hourDay)) 
 
 #publica la proxima jornada
 for item in EQUIPOS:    
-    if (weekDay==2):
-        bot_send_text('<strong> 👇💚🖤 ⚽'+item[0]+' ⚽🖤💚👇</strong> \n'+item[1])            
-        getJornadas(str(item[2]),str(item[3]))
+    
+  
+    if True:
+        ## Lunes Resultados/Jornada + Clasificación    
+        if weekDay == 0 and hourDay < 15:
+            cadenaBot='<strong> 👇💚🖤 ⚽'+item[0]+' ⚽🖤💚👇</strong>\n'+item[1]+'\n'
+            jornadaDisputada=getUltimaJornadaDisputada(str(item[2]),str(item[3]))
+            cadenaBot+=('\n\n<strong>⚽ RESULTADOS Jornada '+jornadaDisputada+' ⚽</strong>\n\n') 
+            cadenaBot+=getResultadosJornada(jornadaDisputada,str(item[2]),str(item[3]))            
+            cadenaBot+=sendClasificacion(str(item[2]),str(item[3]))            
+            bot_send_text(cadenaBot)
+        
+        ## Miercoles Resultados/Jornada
+        if (weekDay==2):
+            bot_send_text('<strong> 👇💚🖤 ⚽'+item[0]+' ⚽🖤💚👇</strong> \n'+item[1])            
+            getJornadas(str(item[2]),str(item[3]))
     
