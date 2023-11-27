@@ -33,7 +33,7 @@ def sendClasificacion(categoria, grupo):
     response = requests.get('http://deportesclm.educa.jccm.es/index.php?prov=19&tipo=&fase=11&dep=FT&cat='+categoria+'&gru='+grupo+'&ver=C')
     
     if (response.status_code==200):
-        cadena='\n 🏃🏼‍♀️⚽🏃🏼‍♀️ <strong>CLASIFICACIÓN</strong> 🏃🏼‍♀️⚽🏃🏼‍♀️\n\n'       
+        cadena='\n🏃🏼‍♀️⚽🏃🏼‍♀️ <strong>CLASIFICACIÓN</strong> 🏃🏼‍♀️⚽🏃🏼‍♀️\n\n'       
         soup = BeautifulSoup(response.text, 'html.parser')
         
         rows = soup.findAll('tr', attrs={'class': re.compile('fila.*')})    
