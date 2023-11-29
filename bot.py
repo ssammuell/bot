@@ -28,6 +28,12 @@ def bot_send_text(bot_message):
     print(response)
     return response    
     
+def showGolaverage(valor):
+    if valor>0:
+        return '%2B'+str(valor)
+    else:        
+        return str(valor)
+    
 
 def sendClasificacion(categoria, grupo):
     response = requests.get('http://deportesclm.educa.jccm.es/index.php?prov=19&tipo=&fase=11&dep=FT&cat='+categoria+'&gru='+grupo+'&ver=C')
@@ -42,17 +48,24 @@ def sendClasificacion(categoria, grupo):
             posicion = row.find('td', attrs={'class': 'posicion'}).text
             equipo = row.find('td', attrs={'class': 'equipo'}).text
             puntos = row.find('td', attrs={'class': 'puntos'}).text
+            golesfavor=int(row.findAll('td')[3].text)
+            golescontra=int(row.findAll('td')[4].text)
+            partidosjugados=row.findAll('td')[5].text
+            #partidosganados=row.findAll('td')[6]
+            #partidosempatados=row.findAll('td')[7]
+            #partidosperdidos=row.findAll('td')[8]                        
+            
             cadena+='<strong>'
             if i == 0 :
-                cadena+='🥇'+str(posicion)+' .- '+str(equipo)+'</strong>\nPuntos: '+str(puntos) +'\n'
+                cadena+='🥇'+str(posicion)+' .- '+str(equipo)+'</strong>\n+Puntos: '+str(puntos) +' ('+showGolaverage(golesfavor-golescontra)+')\nPartidos Jugados: '+partidosjugados+"\n"
             else:
                 if i==1:
-                    cadena+='🥈'+str(posicion)+' .- '+str(equipo)+'</strong>\nPuntos: '+str(puntos) +'\n'
+                    cadena+='🥈'+str(posicion)+' .- '+str(equipo)+'</strong>\nPuntos: '+str(puntos) +' ('+showGolaverage(golesfavor-golescontra)+')\nPartidos Jugados: '+partidosjugados+"\n"
                 else:
                     if i==2:
-                        cadena+='🥉'+str(posicion)+' .- '+str(equipo)+'</strong>\nPuntos: '+str(puntos) +'\n'
+                        cadena+='🥉'+str(posicion)+' .- '+str(equipo)+'</strong>\nPuntos: '+str(puntos) +' ('+showGolaverage(golesfavor-golescontra)+')\nPartidos Jugados: '+partidosjugados+"\n"
                     else:
-                        cadena+=str(posicion)+' .- '+str(equipo)+'</strong>\nPuntos: '+str(puntos) +'\n'
+                        cadena+=str(posicion)+' .- '+str(equipo)+'</strong>\nPuntos: '+str(puntos) +' ('+showGolaverage(golesfavor-golescontra)+')\nPartidos Jugados: '+partidosjugados+"\n"
             i=i+1
         
         return(cadena)
@@ -206,7 +219,7 @@ print('Telegram Bot Start! Day:'+str(weekDay)+' - Hour :'+str(hourDay))
 #publica la proxima jornada
 for item in EQUIPOS:    
     
-  
+    
     if True:
         ## Lunes Resultados/Jornada + Clasificación    
         if weekDay == 0 and hourDay < 15 and hourDay > 12:
