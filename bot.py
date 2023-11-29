@@ -57,15 +57,15 @@ def sendClasificacion(categoria, grupo):
             
             cadena+='<strong>'
             if i == 0 :
-                cadena+='🥇'+str(posicion)+' .- '+str(equipo)+'</strong>\n+Puntos: '+str(puntos) +' ('+showGolaverage(golesfavor-golescontra)+')\nPartidos Jugados: '+partidosjugados+"\n"
+                cadena+='🥇'+str(posicion)+' .- '+str(equipo)+'</strong>\n+  Puntos: '+str(puntos) +' ('+showGolaverage(golesfavor-golescontra)+')\n  Partidos Jugados: '+partidosjugados+"\n"
             else:
                 if i==1:
-                    cadena+='🥈'+str(posicion)+' .- '+str(equipo)+'</strong>\nPuntos: '+str(puntos) +' ('+showGolaverage(golesfavor-golescontra)+')\nPartidos Jugados: '+partidosjugados+"\n"
+                    cadena+='🥈'+str(posicion)+' .- '+str(equipo)+'</strong>\n  Puntos: '+str(puntos) +' ('+showGolaverage(golesfavor-golescontra)+')\n  Partidos Jugados: '+partidosjugados+"\n"
                 else:
                     if i==2:
-                        cadena+='🥉'+str(posicion)+' .- '+str(equipo)+'</strong>\nPuntos: '+str(puntos) +' ('+showGolaverage(golesfavor-golescontra)+')\nPartidos Jugados: '+partidosjugados+"\n"
+                        cadena+='🥉'+str(posicion)+' .- '+str(equipo)+'</strong>\n  Puntos: '+str(puntos) +' ('+showGolaverage(golesfavor-golescontra)+')\n  Partidos Jugados: '+partidosjugados+"\n"
                     else:
-                        cadena+=str(posicion)+' .- '+str(equipo)+'</strong>\nPuntos: '+str(puntos) +' ('+showGolaverage(golesfavor-golescontra)+')\nPartidos Jugados: '+partidosjugados+"\n"
+                        cadena+=str(posicion)+' .- '+str(equipo)+'</strong>\n  Puntos: '+str(puntos) +' ('+showGolaverage(golesfavor-golescontra)+')\n  Partidos Jugados: '+partidosjugados+"\n"
             i=i+1
         
         return(cadena)
