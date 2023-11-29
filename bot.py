@@ -221,7 +221,7 @@ for item in EQUIPOS:
     
     
     if True:
-        ## Lunes Resultados/Jornada + Clasificación    
+        ## Lunes entre 12H-15h Resultados/Jornada + Clasificación    
         if weekDay == 0 and hourDay < 15 and hourDay > 12:
             cadenaBot='<strong> 👇💚🖤 ⚽'+item[0]+' ⚽🖤💚👇</strong>\n'+item[1]+'\n'
             jornadaDisputada=getUltimaJornadaDisputada(str(item[2]),str(item[3]))
@@ -230,8 +230,8 @@ for item in EQUIPOS:
             cadenaBot+=sendClasificacion(str(item[2]),str(item[3]))            
             bot_send_text(cadenaBot)
         
-        ## Miercoles Resultados/Jornada
-        if (weekDay==2):
+        ## Miercoles antes de las 12h Resultados/Jornada 
+        if weekDay==2 and hourDay < 12:
             bot_send_text('<strong> 👇💚🖤 ⚽'+item[0]+' ⚽🖤💚👇</strong> \n'+item[1])            
             getJornadas(str(item[2]),str(item[3]))
     
