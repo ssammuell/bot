@@ -21,8 +21,8 @@ def bot_send_text(bot_message):
         
     #print(bot_message)
     #send_text = 'https://api.telegram.org/bot'+BOT_TOKEN+'/sendMessage?chat_id='+BOT_ID+'&parse_mode=Markdown&text='+bot_message
-    #send_text = 'https://api.telegram.org/bot'+BOT_TOKEN+'/sendMessage?chat_id=@'+CHANEL_ID_TEST+'&parse_mode=HTML&text='+bot_message
-    send_text = 'https://api.telegram.org/bot'+BOT_TOKEN+'/sendMessage?chat_id=@'+CHANEL_ID+'&parse_mode=HTML&text='+bot_message
+    send_text = 'https://api.telegram.org/bot'+BOT_TOKEN+'/sendMessage?chat_id=@'+CHANEL_ID_TEST+'&parse_mode=HTML&text='+bot_message
+    #send_text = 'https://api.telegram.org/bot'+BOT_TOKEN+'/sendMessage?chat_id=@'+CHANEL_ID+'&parse_mode=HTML&text='+bot_message
 
     response = requests.get(send_text)
     print(response)
@@ -171,7 +171,8 @@ def getJornadas(categoria, grupo):
                 cadena+='\n'
 
             if (diasJornada>TIEMPO_JORNADA):
-                bot_send_text('Semana de descanso. A disfrutar del Fin de Semana!!')                
+                bot_send_text('SEMANA DE DESCANSO 🎄 🎄 .\n A disfrutar del Fin de Semana!!\n')    
+                
             else:                
                 bot_send_text(cadena)
                 #publica la clasificacion
@@ -231,7 +232,7 @@ for item in EQUIPOS:
             bot_send_text(cadenaBot)
         
         ## Miercoles antes de las 12h Resultados/Jornada 
-        if weekDay==2 and hourDay < 12:
+        if weekDay==2 and hourDay < 12:        
             bot_send_text('<strong> 👇💚🖤 ⚽'+item[0]+' ⚽🖤💚👇</strong> \n'+item[1])            
             getJornadas(str(item[2]),str(item[3]))
     
