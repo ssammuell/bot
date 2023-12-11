@@ -120,6 +120,9 @@ def getResultadosJornada(numJornada,categoria,grupo):
     myResponse = requests.get(url)
     if (myResponse.status_code == 200):
         soup = BeautifulSoup(myResponse.text, 'html.parser')
+        lAvisos=soup.find_all(attrs={'class':'txtaviso'})
+        for aviso in lAvisos:
+            cadena+='\n 👀 <strong>INFORMACIÓN PROVISIONAL</strong>👀\n'
         tabla=(soup.find('tbody')).find_all('tr')
         for item in tabla:
             cadena+=(item.find(attrs={'class':'EquipoL'})).text.replace('[...]','').strip()[0:15]+'  VS  '+(item.find(attrs={'class':'EquipoV'})).text.replace('[...]','').strip()[0:15]
@@ -127,6 +130,7 @@ def getResultadosJornada(numJornada,categoria,grupo):
             if len(item.find_all(attrs={'class':'puntos'}))>0 :
                 cadena+=('\n'+ str(item.find_all(attrs={'class':'puntos'})[0].text)+' - '+str(item.find_all(attrs={'class':'puntos'})[1].text))            
             cadena+='\n'
+        
     return cadena         
     
 
@@ -201,7 +205,7 @@ def getArrayJorandas(categoria,grupo):
 #Última jorndada disputada, si no hubira habido jornada no se devuelve nada
 def getUltimaJornadaDisputada(categoria,grupo):
     lJornadas=getArrayJorandas(categoria,grupo)    
-    res='0'
+    res='0'    
     for item in lJornadas:        
         duration_in_s=(datetime.now()-item[1]).total_seconds() 
         tiempo=(divmod(duration_in_s, 86400)[0] )
@@ -223,9 +227,11 @@ for item in EQUIPOS:
     
     if True:
         ## Lunes entre 12H-15h Resultados/Jornada + Clasificación    
-        if weekDay == 0 and hourDay < 15 and hourDay > 12:
+        if weekDay == 0 and hourDay < 14:
+        #and hourDay > 12:
             cadenaBot='<strong> 👇💚🖤 ⚽'+item[0]+' ⚽🖤💚👇</strong>\n'+item[1]+'\n'
             jornadaDisputada=getUltimaJornadaDisputada(str(item[2]),str(item[3]))
+            jornadaDisputada='5'
             cadenaBot+=('\n\n<strong>⚽ RESULTADOS Jornada '+jornadaDisputada+' ⚽</strong>\n\n') 
             cadenaBot+=getResultadosJornada(jornadaDisputada,str(item[2]),str(item[3]))            
             cadenaBot+=sendClasificacion(str(item[2]),str(item[3]))            
