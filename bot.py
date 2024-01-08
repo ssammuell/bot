@@ -14,15 +14,37 @@ BOT_ID ='269014811'
 CHANEL_ID='base_femenino_dinamo_guadalajara'
 CHANEL_ID_TEST='testbotfutbol'
 EQUIPOS=[['Alevín Femenino','Álvaro-?',10,1296],['Alevín-Infantil Femenino','Óscar-Julia',16,1309]]
+EQUIPOS_WSP=[['Alevín-Infantil Femenino','Óscar-Julia',16,1309]]
 TIEMPO_JORNADA=5
 timenow = time.localtime()
+
+def sendWSP(message):
+    message=message.replace('<strong>','*')
+    message=message.replace('</strong>','*')
+    message=message.replace('%2B','+')
+    message=message.replace('<i>','_')
+    message=message.replace('</i>','_')
+    apikey = "5e7278b8fbmshd2319df33124ad0p14b41fjsnd92a08001452"
+    gid = "120363201248192030"
+    url = "https://whin2.p.rapidapi.com/send"
+    headers = {
+	"content-type": "application/json",
+	"X-RapidAPI-Key": apikey,
+	"X-RapidAPI-Host": "whin2.p.rapidapi.com"}
+    try:         
+        url = "https://whin2.p.rapidapi.com/send2group"
+        querystring = {"gid":gid}
+        response = requests.request("POST", url, json={"text":message}, headers=headers, params=querystring) 
+        print(response)
+    except requests.ConnectionError:
+        return("Error: Connection Error")
 
 def bot_send_text(bot_message):
         
     #print(bot_message)
     #send_text = 'https://api.telegram.org/bot'+BOT_TOKEN+'/sendMessage?chat_id='+BOT_ID+'&parse_mode=Markdown&text='+bot_message
-    #send_text = 'https://api.telegram.org/bot'+BOT_TOKEN+'/sendMessage?chat_id=@'+CHANEL_ID_TEST+'&parse_mode=HTML&text='+bot_message
-    send_text = 'https://api.telegram.org/bot'+BOT_TOKEN+'/sendMessage?chat_id=@'+CHANEL_ID+'&parse_mode=HTML&text='+bot_message
+    send_text = 'https://api.telegram.org/bot'+BOT_TOKEN+'/sendMessage?chat_id=@'+CHANEL_ID_TEST+'&parse_mode=HTML&text='+bot_message
+    #send_text = 'https://api.telegram.org/bot'+BOT_TOKEN+'/sendMessage?chat_id=@'+CHANEL_ID+'&parse_mode=HTML&text='+bot_message
 
     response = requests.get(send_text)
     print(response)
@@ -57,7 +79,7 @@ def sendClasificacion(categoria, grupo):
             
             cadena+='<strong>'
             if i == 0 :
-                cadena+='🥇'+str(posicion)+' .- '+str(equipo)+'</strong>\n+  Puntos: '+str(puntos) +' ('+showGolaverage(golesfavor-golescontra)+')\n  Partidos Jugados: '+partidosjugados+"\n"
+                cadena+='🥇'+str(posicion)+' .- '+str(equipo)+'</strong>\n  Puntos: '+str(puntos) +' ('+showGolaverage(golesfavor-golescontra)+')\n  Partidos Jugados: '+partidosjugados+"\n"
             else:
                 if i==1:
                     cadena+='🥈'+str(posicion)+' .- '+str(equipo)+'</strong>\n  Puntos: '+str(puntos) +' ('+showGolaverage(golesfavor-golescontra)+')\n  Partidos Jugados: '+partidosjugados+"\n"
@@ -139,7 +161,7 @@ def getNumJornada(texto,categoria,grupo):
 
 def getJornadas(categoria, grupo):
     url=('http://deportesclm.educa.jccm.es/index.php?prov=19&tipo=&fase=11&dep=FT&cat='+categoria+'&gru='+grupo+'&ver=R')    
-    response = requests.get(url)
+    response = requests.get(url)    
         
     if (response.status_code==200):            
             #cadena='<strong>🗓️ HORARIOS JORNADA 🗓️</strong>'  
@@ -175,30 +197,31 @@ def getJornadas(categoria, grupo):
                 cadena+='\n'
 
             if (diasJornada>TIEMPO_JORNADA):
-                bot_send_text('SEMANA DE DESCANSO 🎄 🎄 .\n A disfrutar del Fin de Semana!!\n')    
+                return 'SEMANA DE DESCANSO 🎄 🎄 .\n A disfrutar del Fin de Semana!!\n'    
                 
             else:                
-                bot_send_text(cadena)
+                return cadena
                 #publica la clasificacion
                 #sendClasificacion(categoria,grupo)
-            
-def sendResultados(categoria,grupo):
-    getJornadas(categoria,grupo)
-    
+               
 # Listado de las Jornadas del Calendario
 def getArrayJorandas(categoria,grupo):
-    url=('http://deportesclm.educa.jccm.es/index.php?prov=19&tipo=&fase=11&dep=FT&cat='+categoria+'&gru='+grupo+'&ver=R')    
+    url=('http://deportesclm.educa.jccm.es/index.php?prov=19&tipo=&fase=11&dep=FT&cat='+categoria+'&gru='+grupo+'&ver=R')        
     response = requests.get(url)
     res=[]    
+    
     if (response.status_code==200):   
-        soup = BeautifulSoup(response.text, 'html.parser')
-        lJornadas = soup.find(attrs={'id':'jor'})         
-        for item in lJornadas:
-            if '-' in item.text: 
+        soup = BeautifulSoup(response.text, 'html.parser')        
+        lJornadas = soup.find(attrs={'id':'jor'})                 
+        for item in lJornadas:                    
+            try:
+               if item.text and ('-' in item.text): 
                 numero = (item.text.split('-')[0].strip()).split(' ')[1]
                 fechaText = item.text.split('-')[1].strip()
                 fecha=datetime.strptime(fechaText,'%d/%m/%y')                 
-                res.append([numero,fecha])                
+                res.append([numero,fecha])  
+            except:
+                print('error: '+str(item))                                             
     
     return res    
 
@@ -221,24 +244,41 @@ weekDay=datetime.now().weekday()
 hourDay=datetime.now().hour
 print('Telegram Bot Start! Day:'+str(weekDay)+' - Hour :'+str(hourDay)) 
 
-#publica la proxima jornada
+#publica la proxima jornada TELEGRAM
 for item in EQUIPOS:    
     
     
     if True:
         ## Lunes entre 12H-15h Resultados/Jornada + Clasificación    
-        if weekDay == 0 and hourDay < 14:
+        if weekDay == 0 and hourDay < 14:                      
         #and hourDay > 12:
-            cadenaBot='<strong> 👇💚🖤 ⚽'+item[0]+' ⚽🖤💚👇</strong>\n'+item[1]+'\n'
-            jornadaDisputada=getUltimaJornadaDisputada(str(item[2]),str(item[3]))
-            jornadaDisputada='5'
+            cadenaBot='👇💚🖤 ⚽<strong>'+item[0]+'</strong>⚽🖤💚👇\n'+item[1]+'\n'
+            jornadaDisputada=getUltimaJornadaDisputada(str(item[2]),str(item[3]))                        
             cadenaBot+=('\n\n<strong>⚽ RESULTADOS Jornada '+jornadaDisputada+' ⚽</strong>\n\n') 
             cadenaBot+=getResultadosJornada(jornadaDisputada,str(item[2]),str(item[3]))            
             cadenaBot+=sendClasificacion(str(item[2]),str(item[3]))            
             bot_send_text(cadenaBot)
         
         ## Miercoles antes de las 12h Resultados/Jornada 
-        if weekDay==2 and hourDay < 12:        
-            bot_send_text('<strong> 👇💚🖤 ⚽'+item[0]+' ⚽🖤💚👇</strong> \n'+item[1])            
-            getJornadas(str(item[2]),str(item[3]))
+        if weekDay==2 and hourDay < 12:                        
+            bot_send_text('👇💚🖤 ⚽<strong>'+item[0]+'</strong> ⚽🖤💚👇\n'+item[1])            
+            bot_send_text(getJornadas(str(item[2]),str(item[3])))
+            
+
+#publica la proxima jornada WHATSAPP
+for item in EQUIPOS_WSP:    
     
+    
+    if True:
+        ## Lunes entre 12H-15h Resultados/Jornada + Clasificación    
+        if weekDay == 0 and hourDay < 14:                        
+            jornadaDisputada=getUltimaJornadaDisputada(str(item[2]),str(item[3]))                        
+            cadenaBot=('\n⚽<strong>RESULTADOS Jornada '+jornadaDisputada+'</strong>⚽\n') 
+            cadenaBot+=getResultadosJornada(jornadaDisputada,str(item[2]),str(item[3]))            
+            cadenaBot+=sendClasificacion(str(item[2]),str(item[3]))            
+            sendWSP(cadenaBot)
+        
+        ## Miercoles antes de las 12h Resultados/Jornada 
+        if weekDay==2 and hourDay < 12:                                                                  
+            sendWSP(getJornadas(str(item[2]),str(item[3])))   
+            
